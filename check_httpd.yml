@@ -1,0 +1,36 @@
+---
+- name: Vérifier et gérer le service HTTPD (Apache)
+  hosts: centos_servers
+  become: yes
+
+  tasks:
+    - name: Vérifier si le service httpd est installé
+      yum:
+        name: httpd
+        state: present
+      register: httpd_installed
+
+    - name: Afficher l'état de l'installation du service httpd
+      debug:
+        msg: "Le service httpd est installé."
+      when: httpd_installed.changed
+
+    - name: Vérifier si le service httpd est actif
+      systemd:
+        name: httpd
+        state: started
+        enabled: yes
+      register: httpd_status
+
+    - name: Afficher l'état du service httpd
+      debug:
+        msg: "Le service httpd est en cours d'exécution et activé."
+      when: httpd_status.changed
+
+    - name: Démarrer le service httpd si ce n'est pas le cas
+      systemd:
+        name: httpd
+        state: started
+        enabled: yes
+      when: not httpd_status.changed
+
